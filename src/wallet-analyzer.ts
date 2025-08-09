@@ -35,8 +35,6 @@ import {
   elizaLogger,
 } from '@elizaos/core';
 
-
-// Extended type definitions for comprehensive analysis
 export interface TokenHolding {
   symbol: string;
   name: string;
@@ -48,7 +46,21 @@ export interface TokenHolding {
   percentage?: number;
   isStakeable?: boolean;
   stakingOptions?: StakingOption[];
+  isTestnet?: boolean;
 }
+
+export interface TokenBalanceData {
+  address: string;
+  chainName: string;
+  nativeBalance: string;
+  tokenHoldings: TokenHolding[];
+  totalUsdValue: number;
+  isTestnet?: boolean;
+}
+
+
+// Extended type definitions for comprehensive analysis
+
 
 export interface StakingOption {
   protocol: string;
@@ -70,14 +82,7 @@ export interface StakingRecommendation {
   riskAssessment: string;
   expectedReturn: string;
   priority: "HIGH" | "MEDIUM" | "LOW";
-}
-
-export interface TokenBalanceData {
-  address: string;
-  chainName: string;
-  nativeBalance: string;
-  tokenHoldings: TokenHolding[];
-  totalUsdValue: number;
+  isTestnet?: boolean;
 }
 
 export interface WalletAnalysis {
@@ -375,7 +380,177 @@ class InternalTokenBalanceProvider {
       },
     ]
   };
+  // Testnet token databases for testing
+  private static readonly TESTNET_TOKEN_DATABASE = {
+    sepolia: [
+      { 
+        address: '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984', 
+        symbol: 'UNI', 
+        name: 'Uniswap (Testnet)', 
+        decimals: 18,
+        isStakeable: false,
+        isTestnet: true
+      },
+      { 
+        address: '0x779877A7B0D9E8603169DdbD7836e478b4624789', 
+        symbol: 'LINK', 
+        name: 'Chainlink Token (Testnet)', 
+        decimals: 18,
+        isStakeable: true,
+        isTestnet: true,
+        stakingOptions: [
+          {
+            protocol: 'Testnet Aave',
+            type: 'LIQUID' as const,
+            expectedApr: 5.0,
+            minAmount: '10',
+            riskLevel: 'LOW' as const,
+            description: 'Test LINK lending on Aave Sepolia',
+            chainName: 'sepolia'
+          }
+        ]
+      },
+      { 
+        address: '0x6f14C02Fc1F78322cFd7d707ab90f18baD3B54f5', 
+        symbol: 'USDC', 
+        name: 'USD Coin (Testnet)', 
+        decimals: 6,
+        isStakeable: true,
+        isTestnet: true,
+        stakingOptions: [
+          {
+            protocol: 'Testnet Compound',
+            type: 'LIQUID' as const,
+            expectedApr: 3.5,
+            minAmount: '100',
+            riskLevel: 'LOW' as const,
+            description: 'Test USDC lending on Compound Sepolia',
+            chainName: 'sepolia'
+          }
+        ]
+      },
+      { 
+        address: '0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14', 
+        symbol: 'WETH', 
+        name: 'Wrapped Ether (Testnet)', 
+        decimals: 18,
+        isStakeable: true,
+        isTestnet: true,
+        stakingOptions: [
+          {
+            protocol: 'Testnet Lido',
+            type: 'LIQUID' as const,
+            expectedApr: 2.5,
+            minAmount: '0.1',
+            riskLevel: 'LOW' as const,
+            description: 'Test ETH staking on Lido Sepolia',
+            chainName: 'sepolia'
+          }
+        ]
+      }
+    ],
+    goerli: [
+      { 
+        address: '0x07865c6E87B9F70255377e024ace6630C1Eaa37F', 
+        symbol: 'USDC', 
+        name: 'USD Coin (Goerli)', 
+        decimals: 6,
+        isStakeable: true,
+        isTestnet: true,
+        stakingOptions: [
+          {
+            protocol: 'Goerli Aave',
+            type: 'LIQUID' as const,
+            expectedApr: 4.0,
+            minAmount: '50',
+            riskLevel: 'LOW' as const,
+            description: 'Test USDC lending on Aave Goerli',
+            chainName: 'goerli'
+          }
+        ]
+      }
+    ],
+    baseGoerli: [
+      { 
+        address: '0xF175520C52418dfE19C8098071a252da48Cd1C19', 
+        symbol: 'USDC', 
+        name: 'USD Coin (Base Goerli)', 
+        decimals: 6,
+        isStakeable: true,
+        isTestnet: true,
+        stakingOptions: [
+          {
+            protocol: 'Base Testnet Aave',
+            type: 'LIQUID' as const,
+            expectedApr: 3.2,
+            minAmount: '25',
+            riskLevel: 'MEDIUM' as const,
+            description: 'Test USDC lending on Base Goerli',
+            chainName: 'baseGoerli'
+          }
+        ]
+      }
+    ],
+    arbitrumGoerli: [
+      { 
+        address: '0x72A9c57cD5E2Ff20450e409cF6A542f1E6c710fc', 
+        symbol: 'USDC', 
+        name: 'USD Coin (Arbitrum Goerli)', 
+        decimals: 6,
+        isStakeable: true,
+        isTestnet: true,
+        stakingOptions: [
+          {
+            protocol: 'Arbitrum Testnet Radiant',
+            type: 'LIQUID' as const,
+            expectedApr: 3.8,
+            minAmount: '30',
+            riskLevel: 'MEDIUM' as const,
+            description: 'Test USDC lending on Arbitrum Goerli',
+            chainName: 'arbitrumGoerli'
+          }
+        ]
+      }
+    ]
+  };
 
+  // Testnet ETH staking options
+  public static readonly TESTNET_ETH_STAKING_OPTIONS: StakingOption[] = [
+    {
+      protocol: 'Testnet Lido',
+      type: 'LIQUID',
+      expectedApr: 2.5,
+      minAmount: '0.01',
+      riskLevel: 'LOW',
+      description: 'Test liquid staking with Lido on Sepolia/Goerli',
+      chainName: 'sepolia'
+    },
+    {
+      protocol: 'Testnet Rocket Pool',
+      type: 'LIQUID',
+      expectedApr: 2.3,
+      minAmount: '0.01',
+      riskLevel: 'LOW',
+      description: 'Test decentralized staking on testnet',
+      chainName: 'sepolia'
+    },
+    {
+      protocol: 'Testnet Validator',
+      type: 'LOCKED',
+      expectedApr: 3.0,
+      minAmount: '32',
+      lockPeriod: 14,
+      riskLevel: 'MEDIUM',
+      description: 'Test solo validator staking (shorter lock for testing)',
+      chainName: 'sepolia'
+    }
+  ];
+
+  // Helper method to detect if chain is testnet
+  public static isTestnetChain(chainName: string): boolean {
+    const testnetChains = ['sepolia', 'goerli', 'baseGoerli', 'arbitrumGoerli', 'polygonMumbai', 'optimismGoerli'];
+    return testnetChains.includes(chainName);
+  }
   // Native ETH staking options
   public static readonly ETH_STAKING_OPTIONS: StakingOption[] = [
     {
@@ -464,8 +639,17 @@ class InternalTokenBalanceProvider {
     const nativeBalance = await client.getBalance({ address });
     const nativeBalanceFormatted = formatUnits(nativeBalance, 18);
 
-    // Get tokens for this chain
-    const tokens = (InternalTokenBalanceProvider.TOKEN_DATABASE as any)[chainName] || [];
+    // Get tokens for this chain - check both mainnet and testnet databases
+    const isTestnet = InternalTokenBalanceProvider.isTestnetChain(chainName);
+    let tokens: any[] = [];
+    
+    if (isTestnet) {
+      tokens = (InternalTokenBalanceProvider.TESTNET_TOKEN_DATABASE as any)[chainName] || [];
+      elizaLogger.info(`🧪 Using testnet token database for ${chainName}`);
+    } else {
+      tokens = (InternalTokenBalanceProvider.TOKEN_DATABASE as any)[chainName] || [];
+    }
+
     const tokenHoldings: TokenHolding[] = [];
 
     // Check balances for each token
@@ -491,7 +675,8 @@ class InternalTokenBalanceProvider {
                 decimals: tokenConfig.decimals,
                 chainName,
                 isStakeable: tokenConfig.isStakeable || false,
-                stakingOptions: tokenConfig.stakingOptions || []
+                stakingOptions: tokenConfig.stakingOptions || [],
+                isTestnet: tokenConfig.isTestnet || false
               });
             }
           }
@@ -507,6 +692,7 @@ class InternalTokenBalanceProvider {
       nativeBalance: nativeBalanceFormatted,
       tokenHoldings,
       totalUsdValue: 0, // Would need price API integration
+      isTestnet 
     };
   }
 }
@@ -873,6 +1059,45 @@ export class WalletAnalyzer implements Provider {
     
     const recommendations: StakingRecommendation[] = [];
 
+    // ETH Staking Recommendations - check for testnet
+    Object.entries(nativeBalances).forEach(([chainName, balance]) => {
+      const ethBalance = parseFloat(balance);
+      const isTestnet = InternalTokenBalanceProvider.isTestnetChain(chainName);
+      
+      if (ethBalance > 0.01) { // Lower threshold for testnet testing
+        const recommendedEthAmount = ethBalance * (strategy.recommendedAllocation / 100);
+        
+        if (recommendedEthAmount > 0.01) {
+          // Use appropriate staking options based on network type
+          const ethOptions = isTestnet 
+            ? InternalTokenBalanceProvider.TESTNET_ETH_STAKING_OPTIONS.filter(option => {
+                if (strategy.riskTolerance === 'CONSERVATIVE') return option.riskLevel === 'LOW';
+                if (strategy.riskTolerance === 'MODERATE') return option.riskLevel !== 'HIGH';
+                return true;
+              })
+            : InternalTokenBalanceProvider.ETH_STAKING_OPTIONS.filter(option => {
+                if (strategy.riskTolerance === 'CONSERVATIVE') return option.riskLevel === 'LOW';
+                if (strategy.riskTolerance === 'MODERATE') return option.riskLevel !== 'HIGH';
+                return true;
+              });
+
+          const networkType = isTestnet ? 'testnet' : 'mainnet';
+          const reasoningPrefix = isTestnet ? 'TESTNET: ' : '';
+
+          recommendations.push({
+            recommendedAmount: recommendedEthAmount.toFixed(9),
+            token: 'ETH',
+            options: ethOptions,
+            reasoning: `${reasoningPrefix}Based on your ${riskProfile.riskTolerance.toLowerCase()} risk profile and ${ethBalance.toFixed(2)} ETH balance on ${chainName}, staking ${recommendedEthAmount.toFixed(9)} ETH can generate ${isTestnet ? 'test' : 'steady'} yield.`,
+            riskAssessment: `${strategy.riskTolerance} risk tolerance suggests ${ethOptions[0]?.protocol || 'liquid staking'} protocols on ${networkType}.`,
+            expectedReturn: `${(recommendedEthAmount * (ethOptions[0]?.expectedApr || 3.2) / 100).toFixed(9)} ETH annually`,
+            priority: ethBalance > 5 ? "HIGH" : ethBalance > 1 ? "MEDIUM" : "LOW",
+            isTestnet 
+          });
+        }
+      }
+    });
+
     // ETH Staking Recommendations
     const ethBalance = parseFloat(nativeBalances.mainnet || '0');
     if (ethBalance > 0.1) {
@@ -927,8 +1152,7 @@ export class WalletAnalyzer implements Provider {
       }
     }
 
-    // Sort by priority and expected returns
-    return recommendations.sort((a, b) => {
+     return recommendations.sort((a, b) => {
       const priorityOrder = { HIGH: 3, MEDIUM: 2, LOW: 1 };
       return priorityOrder[b.priority] - priorityOrder[a.priority];
     });
@@ -1258,9 +1482,32 @@ export class WalletAnalyzer implements Provider {
     };
   }
 
-  private formatAnalysisWithStaking(analysis: WalletAnalysis, agentName: string): string {
-    let text = `${agentName}'s Comprehensive Wallet Analysis & Staking Strategy for ${analysis.address}:\n\n`;
+  private formatAnalysisWithStaking(analysis: WalletAnalysis, agentName: string): string {    
+    // Detect if this is a testnet analysis
+    const hasTestnetTokens = analysis.tokenHoldings.some(token => token.isTestnet);
+    const testnetChains = Object.keys(analysis.nativeBalances).filter(chain => 
+      InternalTokenBalanceProvider.isTestnetChain(chain)
+    );
+    const isTestnetAnalysis = hasTestnetTokens || testnetChains.length > 0;
+
+    let text = `${agentName}'s ${isTestnetAnalysis ? '🧪 TESTNET ' : ''}Comprehensive Wallet Analysis & Staking Strategy for ${analysis.address}:\n\n`;
     
+    if (isTestnetAnalysis) {
+      text += `🧪 **TESTNET MODE DETECTED**\n`;
+      text += `This analysis includes testnet tokens and chains for testing purposes.\n`;
+      text += `Testnet Chains: ${testnetChains.join(', ')}\n`;
+      text += `Testnet Tokens: ${analysis.tokenHoldings.filter(t => t.isTestnet).length}\n\n`;
+    }
+    
+    // Portfolio Overview
+    text += `📊 PORTFOLIO OVERVIEW:\n`;
+    text += `Total Native Balance: ${analysis.totalBalance} ETH\n`;
+    text += `Token Holdings: ${analysis.tokenHoldings.length} tokens ${isTestnetAnalysis ? '(including testnet)' : ''}\n`;
+    text += `Active Chains: ${Object.keys(analysis.nativeBalances).length}\n`;
+    text += `Diversification Score: ${analysis.diversificationScore}/100\n`;
+    text += `Current Staking Positions: ${analysis.currentStakingPositions.length}\n\n`;
+    
+
     // Portfolio Overview
     text += `📊 PORTFOLIO OVERVIEW:\n`;
     text += `Total Native Balance: ${analysis.totalBalance} ETH\n`;
@@ -1359,6 +1606,20 @@ export class WalletAnalyzer implements Provider {
       text += `1. Build up ETH balance to 0.1+ for liquid staking opportunities\n`;
       text += `2. Consider accumulating stablecoins for lending yield\n`;
       text += `3. Explore DeFi protocols on your active chains\n`;
+    }
+     if (isTestnetAnalysis) {
+      text += `\n🧪 **TESTNET TESTING RECOMMENDATIONS:**\n`;
+      text += `1. Test staking workflows with small amounts\n`;
+      text += `2. Verify protocol interactions work as expected\n`;
+      text += `3. Practice unstaking and reward claiming\n`;
+      text += `4. Test emergency withdrawal procedures\n`;
+      text += `5. Validate gas cost estimations\n\n`;
+      
+      text += `⚠️ **TESTNET DISCLAIMER:**\n`;
+      text += `• Testnet tokens have no real value\n`;
+      text += `• APR rates are for testing purposes only\n`;
+      text += `• Use for learning and validation before mainnet\n`;
+      text += `• Always verify smart contract addresses\n`;
     }
     
     return text;

@@ -962,12 +962,187 @@ function generateOptimizationResponse(analysis: WalletAnalysis): string {
   return response;
 }
 
-// EXPORT ALL ACTIONS
+// Add this new action to your walletAnalysisActions array
+
+const testnetAnalysisAction: Action = {
+  name: "ANALYZE_TESTNET_WALLET",
+  similes: [
+    "testnet analysis",
+    "analyze testnet wallet",
+    "test wallet analysis",
+    "testnet staking",
+    "sepolia analysis",
+    "goerli analysis"
+  ],
+  description: "Analyze testnet wallet and provide testnet-specific staking recommendations for testing purposes",
+  
+  validate: async (runtime: IAgentRuntime, message: Memory): Promise<boolean> => {
+    const text = message.content.text?.toLowerCase() || '';
+    const hasWalletAddress = Validator.extractWalletAddress(text);
+    
+    return (text.includes("testnet") || text.includes("sepolia") || text.includes("goerli")) &&
+           (text.includes("analyze") || text.includes("test")) &&
+           !!hasWalletAddress;
+  },
+
+  handler: async (
+    runtime: IAgentRuntime, 
+    message: Memory, 
+    state?: State, 
+    options?: { [key: string]: unknown }, 
+    callback?: HandlerCallback
+  ): Promise<void | ActionResult | undefined> => {
+    try {
+      const walletAddress = Validator.extractWalletAddress(message.content.text || '');
+
+      if (!walletAddress) {
+        const errorResponse = {
+          text: "🧪 Please provide a valid wallet address for testnet analysis. Example: 0x742d35Cc6654C2cFc2B28B44E8D9c8C0E4cB9fcE",
+          content: {
+            text: "🧪 Please provide a valid wallet address for testnet analysis.",
+            action: "ANALYZE_TESTNET_WALLET"
+          }
+        };
+
+        if (callback) {
+          callback(errorResponse);
+        }
+        return;
+      }
+
+      elizaLogger.info(`🧪 Starting testnet analysis for ${walletAddress}`);
+      
+      const walletAnalyzer = new WalletAnalyzer();
+      const analysis = await walletAnalyzer.analyzeWallet(runtime, walletAddress);
+
+      if (!analysis) {
+        throw new Error("Failed to analyze testnet wallet");
+      }
+
+      // Generate testnet-focused response
+      const response = generateTestnetAnalysisResponse(analysis);
+
+      const result: ActionResult = {
+        text: response,
+        success: true,
+        data: {
+          testnetAnalysis: analysis,
+          isTestnet: true
+        }
+      };
+
+      if (callback) {
+        callback({
+          text: result.text,
+          success: result.success,
+          data: result.data
+        });
+      }
+
+      return result;
+    } catch (error) {
+      elizaLogger.error("Error in testnet wallet analysis:", error);
+      
+      const errorMessage = "❌ Sorry, I encountered an error analyzing your testnet wallet. Please try again.";
+      if (callback) {
+        callback({ text: errorMessage });
+      }
+      
+      return { text: errorMessage, success: false };
+    }
+  },
+
+  examples: [
+    [
+      {
+        user: "{{user1}}",
+        content: { text: "Analyze my testnet wallet 0x742d35Cc6654C2cFc2B28B44E8D9c8C0E4cB9fcE" },
+      },
+      {
+        name: "{{agentName}}",
+        content: {
+          text: "🧪 Analyzing your testnet wallet for testing staking strategies...",
+          action: "ANALYZE_TESTNET_WALLET",
+        },
+      },
+    ],
+  ] as ActionExample[][],
+};
+
+// Helper function for testnet-specific response
+function generateTestnetAnalysisResponse(analysis: WalletAnalysis): string {
+  const testnetTokens = analysis.tokenHoldings.filter(token => token.isTestnet);
+  const testnetChains = Object.keys(analysis.nativeBalances).filter(chain => 
+    ['sepolia', 'goerli', 'baseGoerli', 'arbitrumGoerli'].includes(chain)
+  );
+
+  let response = `🧪 **TESTNET WALLET ANALYSIS**\n\n`;
+  
+  response += `**📊 Testnet Portfolio Overview:**\n`;
+  response += `• Address: ${analysis.address.slice(0, 6)}...${analysis.address.slice(-4)}\n`;
+  response += `• Testnet Chains: ${testnetChains.length} (${testnetChains.join(', ')})\n`;
+  response += `• Testnet Tokens: ${testnetTokens.length}\n`;
+  response += `• Total Test ETH: ${analysis.totalBalance} ETH\n\n`;
+
+  if (testnetTokens.length > 0) {
+    response += `**🪙 Testnet Token Holdings:**\n`;
+    testnetTokens.forEach(token => {
+      response += `• ${token.symbol}: ${token.balance} (${token.chainName})\n`;
+      if (token.isStakeable && token.stakingOptions?.length) {
+        response += `  → Stakeable via ${token.stakingOptions[0].protocol}\n`;
+      }
+    });
+    response += '\n';
+  }
+
+  // Testnet staking opportunities
+  const testnetRecommendations = analysis.stakingRecommendations.filter(rec => 
+    rec.options[0]?.chainName && ['sepolia', 'goerli', 'baseGoerli', 'arbitrumGoerli'].includes(rec.options[0].chainName)
+  );
+
+  if (testnetRecommendations.length > 0) {
+    response += `**🎯 Testnet Staking Opportunities:**\n`;
+    testnetRecommendations.forEach((rec, index) => {
+      response += `\n${index + 1}. **Test ${rec.token} Staking**\n`;
+      response += `   • Amount: ${rec.recommendedAmount} ${rec.token}\n`;
+      response += `   • Protocol: ${rec.options[0]?.protocol}\n`;
+      response += `   • Test APR: ${rec.options[0]?.expectedApr}%\n`;
+      response += `   • Risk Level: ${rec.options[0]?.riskLevel}\n`;
+      response += `   • Purpose: ${rec.options[0]?.description}\n`;
+    });
+  }
+
+  response += `\n**🧪 Testing Guidelines:**\n`;
+  response += `• Start with smallest possible amounts\n`;
+  response += `• Test all protocol interactions thoroughly\n`;
+  response += `• Verify unstaking and withdrawal flows\n`;
+  response += `• Document gas costs for mainnet planning\n`;
+  response += `• Test edge cases and error scenarios\n\n`;
+
+  response += `**⚠️ Testnet Disclaimers:**\n`;
+  response += `• ❌ Testnet tokens have NO real value\n`;
+  response += `• 🔄 Networks may reset, losing all data\n`;
+  response += `• ⚡ Higher gas limits may be needed\n`;
+  response += `• 📡 RPC endpoints may be unreliable\n`;
+  response += `• 🎯 Use only for learning and testing\n\n`;
+
+  response += `**📋 Next Steps:**\n`;
+  response += `1. Get testnet ETH from faucets if needed\n`;
+  response += `2. Test basic transfers and approvals first\n`;
+  response += `3. Try smallest staking amounts available\n`;
+  response += `4. Document your testing process\n`;
+  response += `5. Prepare for mainnet with confidence!\n`;
+
+  return response;
+}
+
+// Update the export to include the new action
 export const walletAnalysisActions: Action[] = [
   analyzeWalletAction,
   quickStakingCheckAction,
   riskAssessmentAction,
   optimizePortfolioAction,
+  testnetAnalysisAction, // Add this line
 ];
 
 // Main plugin export structure
