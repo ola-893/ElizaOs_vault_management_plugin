@@ -29,11 +29,15 @@
   "dependencies": {
     "@elizaos/cli": "latest",
     "@elizaos/core": "latest",
+    "@elizaos/plugin-bedrock": "^1.0.1",
     "@elizaos/plugin-bootstrap": "latest",
     "@elizaos/plugin-evm": "^1.0.12",
+    "@elizaos/plugin-goat": "^1.0.0",
     "@elizaos/plugin-google-genai": "^1.0.2",
     "@elizaos/plugin-groq": "^1.0.4",
+    "@elizaos/plugin-ollama": "1.2.3",
     "@elizaos/plugin-sql": "latest",
+    "@goat-sdk/adapter-eliza": "^0.2.9",
     "@tanstack/react-query": "^5.29.0",
     "axios": "^1.11.0",
     "clsx": "^2.1.1",
@@ -41,6 +45,7 @@
     "react-dom": "^18.3.1",
     "tailwind-merge": "^2.6.0",
     "tailwindcss": "^4.1.10",
+    "viem": "2.21.49",
     "zod": "3.24.2"
   },
   "devDependencies": {

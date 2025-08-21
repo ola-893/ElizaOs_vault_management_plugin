@@ -16,6 +16,7 @@ import {
 import axios, { AxiosResponse } from "axios";
 import { WalletAnalyzer } from './wallet-analyzer.ts';
 import { walletAnalysisActions } from "./analyzeWalletAction.ts";
+import { checkWalletBalances, executeStakingAction, executeStakingTransaction, selectStakingAction } from "./goatActions.ts";
 
 
 // TYPES
@@ -478,6 +479,8 @@ export const EnhancedStakingManagerPlugin: Plugin = {
   actions: [
     ...walletAnalysisActions,
     findStakingOpportunitiesAction,
+    selectStakingAction, 
+    executeStakingAction
   ],
   evaluators: [],
   providers: [
