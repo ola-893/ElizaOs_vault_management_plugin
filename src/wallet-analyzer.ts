@@ -91,7 +91,6 @@ export interface StakingRecommendation {
   expectedReturn: string;
   priority: "HIGH" | "MEDIUM" | "LOW";
   isTestnet?: boolean;
-  isTestnet?: boolean;
 }
 
 export interface WalletAnalysis {

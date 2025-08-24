@@ -21,32 +21,32 @@ const initCharacter = async ({ runtime }: { runtime: IAgentRuntime }) => {
   }
 };
 
-// export const projectAgent: ProjectAgent = {
-//   character,
-//   init: async (runtime: IAgentRuntime) => await initCharacter({ runtime }),
-//  plugins: [
-//     EnhancedStakingManagerPlugin, 
-//   ]
-// };
-// const project: Project = {
-//   agents: [projectAgent],
-
-// };
-
 export const projectAgent: ProjectAgent = {
   character,
   init: async (runtime: IAgentRuntime) => await initCharacter({ runtime }),
-  plugins: [
-    EnhancedStakingManagerPlugin,
-    // Create GOAT plugin conditionally and pass the getSecret function
-    ...(getSecret(character, "EVM_PRIVATE_KEY") ? [
-      await createGoatPlugin((secret: string) => getSecret(character, secret))
-    ] : [])
+ plugins: [
+    EnhancedStakingManagerPlugin, 
   ]
 };
 const project: Project = {
   agents: [projectAgent],
+
 };
+
+// export const projectAgent: ProjectAgent = {
+//   character,
+//   init: async (runtime: IAgentRuntime) => await initCharacter({ runtime }),
+//   plugins: [
+//     EnhancedStakingManagerPlugin,
+//     // Create GOAT plugin conditionally and pass the getSecret function
+//     ...(getSecret(character, "EVM_PRIVATE_KEY") ? [
+//       await createGoatPlugin((secret: string) => getSecret(character, secret))
+//     ] : [])
+//   ]
+// };
+// const project: Project = {
+//   agents: [projectAgent],
+// };
 
 export { testSuites } from './__tests__/e2e';
 export { character } from './character.ts';
