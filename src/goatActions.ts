@@ -8,6 +8,7 @@ import {
   type State,
   elizaLogger,
 } from '@elizaos/core';
+import { WalletAnalysis } from './wallet-analyzer';
 
 //interfaces for staking opportunities and transaction results
 interface StakingOpportunity {
@@ -901,26 +902,109 @@ function parseSelectedOpportunityFromText(text: string): StakingOpportunity | nu
 }
 
 // Helper function to extract opportunities from analysis
-function extractStakingOpportunitiesFromAnalysis(analysis: any): StakingOpportunity[] {
+function extractStakingOpportunitiesFromAnalysis(analysis: WalletAnalysis): StakingOpportunity[] {
   const opportunities: StakingOpportunity[] = [];
   
-  if (analysis.testnetBalances) {
-    const ethBalance = analysis.testnetBalances.sepolia?.eth;
-    if (ethBalance && parseFloat(ethBalance) > 0.001) {
+  // Extract opportunities directly from staking recommendations
+  analysis.stakingRecommendations?.forEach(recommendation => {
+    // Process each staking option for this recommendation
+    recommendation.options?.forEach(option => {
       opportunities.push({
-        protocol: "Testnet Lido",
-        token: "ETH",
-        apy: 2.5,
-        balance: (parseFloat(ethBalance) * 0.4).toFixed(6), // Recommend 40% of balance
-        chain: "sepolia",
-        tokenAddress: "",
-        stakingContract: "",
-        description: "Test liquid staking with Lido on Sepolia - practice the full staking flow"
+        protocol: option.protocol,
+        token: recommendation.token,
+        apy: option.expectedApr,
+        balance: recommendation.recommendedAmount,
+        chain: option.chainName,
+        tokenAddress: "", // Will be filled from token holdings if available
+        stakingContract: option.contractAddress || "",
+        description: option.description
+      });
+    });
+  });
+
+  // Extract opportunities from stakeable token holdings
+  analysis.tokenHoldings?.forEach(holding => {
+    if (holding.isStakeable && holding.stakingOptions && holding.stakingOptions?.length > 0) {
+      holding.stakingOptions.forEach(option => {
+        // Find matching recommendation for this token to get recommended amount
+        const matchingRecommendation = analysis.stakingRecommendations?.find(
+          rec => rec.token.toLowerCase() === holding.symbol.toLowerCase()
+        );
+        
+        opportunities.push({
+          protocol: option.protocol,
+          token: holding.symbol,
+          apy: option.expectedApr,
+          balance: matchingRecommendation?.recommendedAmount || holding.balance,
+          chain: option.chainName,
+          tokenAddress: holding.address,
+          stakingContract: option.contractAddress || "",
+          description: option.description
+        });
       });
     }
-  }
-  
-  return opportunities;
+  });
+
+  // Extract from stakeable assets in token analysis
+  analysis.tokenAnalysis?.stakeableAssets?.forEach(asset => {
+    if (asset.stakingOptions && asset.stakingOptions.length > 0) {
+      asset.stakingOptions.forEach(option => {
+        // Check if we already have this opportunity to avoid duplicates
+        const exists = opportunities.some(opp => 
+          opp.protocol === option.protocol && 
+          opp.token === asset.symbol &&
+          opp.chain === option.chainName
+        );
+        
+        if (!exists) {
+          const matchingRecommendation = analysis.stakingRecommendations?.find(
+            rec => rec.token.toLowerCase() === asset.symbol.toLowerCase()
+          );
+          
+          opportunities.push({
+            protocol: option.protocol,
+            token: asset.symbol,
+            apy: option.expectedApr,
+            balance: matchingRecommendation?.recommendedAmount || asset.balance,
+            chain: option.chainName,
+            tokenAddress: asset.address,
+            stakingContract: option.contractAddress || "",
+            description: option.description
+          });
+        }
+      });
+    }
+  });
+
+  // Remove any duplicate opportunities
+  const uniqueOpportunities = opportunities.filter((opp, index, self) => 
+    index === self.findIndex(o => 
+      o.protocol === opp.protocol && 
+      o.token === opp.token && 
+      o.chain === opp.chain
+    )
+  );
+
+  // Sort by priority based on staking recommendations priority and APY
+  return uniqueOpportunities.sort((a, b) => {
+    const aRecommendation = analysis.stakingRecommendations?.find(
+      rec => rec.token.toLowerCase() === a.token.toLowerCase()
+    );
+    const bRecommendation = analysis.stakingRecommendations?.find(
+      rec => rec.token.toLowerCase() === b.token.toLowerCase()
+    );
+    
+    // Priority mapping: HIGH = 3, MEDIUM = 2, LOW = 1, undefined = 0
+    const priorityMap = { HIGH: 3, MEDIUM: 2, LOW: 1 };
+    const aPriority = aRecommendation ? (priorityMap[aRecommendation.priority] || 0) : 0;
+    const bPriority = bRecommendation ? (priorityMap[bRecommendation.priority] || 0) : 0;
+    
+    // First sort by priority, then by APY
+    if (aPriority !== bPriority) {
+      return bPriority - aPriority;
+    }
+    return b.apy - a.apy;
+  });
 }
 
 
