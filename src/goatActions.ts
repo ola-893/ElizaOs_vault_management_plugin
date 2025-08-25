@@ -9,7 +9,7 @@ import {
   elizaLogger,
 } from '@elizaos/core';
 
-// Define interfaces for staking opportunities and transaction results
+//interfaces for staking opportunities and transaction results
 interface StakingOpportunity {
   protocol: string;
   token: string;
@@ -453,7 +453,7 @@ async function executeStakingTransaction(
       try {
         const approveParams = {
           tokenAddress: params.tokenAddress,
-          spender: params.stakingContract || params.tokenAddress, // Fallback to token address
+          spender: params.stakingContract || params.tokenAddress,
           amount: params.amount,
         };
         
@@ -617,7 +617,7 @@ async function getPreviousOpportunities(runtime: IAgentRuntime, message: Memory)
     const recentMemories = await runtime.getMemories({
       roomId: message.roomId,
       count: 10,
-      tableName: "memories", // Added required tableName parameter
+      tableName: "memories",
     });
     
     // Look for previous analysis results
@@ -676,7 +676,7 @@ async function getSelectedOpportunity(runtime: IAgentRuntime, message: Memory): 
     const recentMemories = await runtime.getMemories({
       roomId: message.roomId,
       count: 5,
-      tableName: "memories", // Added required tableName parameter
+      tableName: "memories",
     });
     
     for (const memory of recentMemories) {
@@ -695,7 +695,7 @@ async function getSelectedOpportunity(runtime: IAgentRuntime, message: Memory): 
         }
       }
       
-      // Check in nested data object as fallback
+  
       if (content.data && typeof content.data === 'object') {
         const data = content.data as any;
         if (data.selectedOpportunity) {
@@ -728,7 +728,7 @@ async function getStakingDataForConfirmation(runtime: IAgentRuntime, message: Me
     const recentMemories = await runtime.getMemories({
       roomId: message.roomId,
       count: 3,
-      tableName: "memories", // Added required tableName parameter
+      tableName: "memories",
     });
     
     for (const memory of recentMemories) {
@@ -855,14 +855,12 @@ function parseStakingOpportunitiesFromText(text: string): StakingOpportunity[] {
         token: 'ETH',
         apy: parseFloat(ethStakingMatch[3]),
         balance: ethStakingMatch[1],
-        chain: 'sepolia', // Based on your example
+        chain: 'sepolia',
         tokenAddress: '',
         stakingContract: '',
         description: 'Test liquid staking with Lido on Sepolia',
       });
     }
-    
-    // Add more parsing patterns as needed for different opportunity formats
     
   } catch (error) {
     elizaLogger.error('Error parsing staking opportunities from text:', error);
@@ -904,12 +902,9 @@ function parseSelectedOpportunityFromText(text: string): StakingOpportunity | nu
 
 // Helper function to extract opportunities from analysis
 function extractStakingOpportunitiesFromAnalysis(analysis: any): StakingOpportunity[] {
-  // This would parse your analysis object to create opportunities
-  // Adjust based on your actual analysis structure
   const opportunities: StakingOpportunity[] = [];
   
   if (analysis.testnetBalances) {
-    // Example: Create ETH staking opportunity if user has testnet ETH
     const ethBalance = analysis.testnetBalances.sepolia?.eth;
     if (ethBalance && parseFloat(ethBalance) > 0.001) {
       opportunities.push({

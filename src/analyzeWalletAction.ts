@@ -11,7 +11,6 @@ import {
 
 import { WalletAnalyzer, Validator } from './wallet-analyzer.ts';
 
-// Import your types
 import type {
   WalletAnalysis,
   StakingRecommendation,
@@ -22,7 +21,7 @@ import type {
   StakingStrategy,
 } from './wallet-analyzer.ts';
 
-// Define interfaces for staking opportunities and transaction results
+//interfaces for staking opportunities and transaction results
 interface StakingOpportunity {
   protocol: string;
   token: string;
@@ -141,7 +140,7 @@ function generateCompatibilityReason(
     reasons.push("High potential returns for your portfolio size");
   }
 
-  // Add testnet-specific reasoning
+  //testnet-specific reasoning
   if (rec.isTestnet) {
     reasons.push("Great for testing staking strategies risk-free");
   }
@@ -1168,7 +1167,6 @@ const testnetAnalysisAction: Action = {
           content: {
             text: "🧪 Please provide a valid wallet address for testnet analysis.",
             action: "ANALYZE_TESTNET_WALLET",
-            // Add dynamic properties
             errorType: "missing_wallet_address",
             isTestnet: true,
             requestedAction: "testnet_analysis"
@@ -1184,7 +1182,7 @@ const testnetAnalysisAction: Action = {
       elizaLogger.info(`🧪 Starting dedicated testnet analysis for ${walletAddress}`);
       
       const walletAnalyzer = new WalletAnalyzer();
-      const analysis = await walletAnalyzer.analyzeWallet(runtime, walletAddress, true); // Force testnet mode
+      const analysis = await walletAnalyzer.analyzeWallet(runtime, walletAddress, true);
 
       if (!analysis) {
         throw new Error("Failed to analyze testnet wallet");
@@ -1211,7 +1209,6 @@ const testnetAnalysisAction: Action = {
           content: {
             text: result.text,
             action: "ANALYZE_TESTNET_WALLET",
-            // Add dynamic properties that helper functions can access
             opportunities: opportunities, // Direct access via content.opportunities
             testnetAnalysis: analysis,    // Store full analysis
             walletAddress: walletAddress, // Store analyzed address
@@ -1240,7 +1237,6 @@ const testnetAnalysisAction: Action = {
           content: {
             text: errorMessage,
             action: "ANALYZE_TESTNET_WALLET",
-            // Add error properties
             errorType: "analysis_failed",
             isTestnet: true,
             error: error.message
@@ -1339,27 +1335,9 @@ export const testnetStakingAction: Action = {
 **Ready to analyze your testnet wallet?**
 Use: \`analyze my testnet wallet [your-address]\``;
 
-    // Create testnet staking opportunities for testing
+
     const testnetOpportunities = [
       {
-        protocol: "Testnet Lido",
-        token: "ETH",
-        apy: 2.5,
-        balance: "0.001",
-        chain: "sepolia",
-        tokenAddress: "",
-        stakingContract: "",
-        description: "Test liquid staking with Lido on Sepolia"
-      },
-      {
-        protocol: "Testnet Aave",
-        token: "USDC", 
-        apy: 3.2,
-        balance: "100",
-        chain: "sepolia",
-        tokenAddress: "",
-        stakingContract: "",
-        description: "Test lending on Aave Sepolia"
       }
     ];
 
@@ -1374,12 +1352,11 @@ Use: \`analyze my testnet wallet [your-address]\``;
       content: {
         text: response,
         action: "TESTNET_STAKING_GUIDE",
-        // Add dynamic properties for testnet opportunities
-        opportunities: testnetOpportunities,  // Helper functions can access this
+        opportunities: testnetOpportunities, 
         isTestnet: true,
         guideType: "testnet_staking",
         providedAt: Date.now(),
-        data: {  // Nested fallback
+        data: { 
           opportunities: testnetOpportunities,
           type: "testnet_guide",
           isTestnet: true
@@ -1409,12 +1386,9 @@ Use: \`analyze my testnet wallet [your-address]\``;
 
 // Helper function to extract opportunities from analysis
 function extractStakingOpportunitiesFromAnalysis(analysis: any): StakingOpportunity[] {
-  // This would parse your analysis object to create opportunities
-  // Adjust based on your actual analysis structure
   const opportunities: StakingOpportunity[] = [];
   
   if (analysis.testnetBalances) {
-    // Example: Create ETH staking opportunity if user has testnet ETH
     const ethBalance = analysis.testnetBalances.sepolia?.eth;
     if (ethBalance && parseFloat(ethBalance) > 0.001) {
       opportunities.push({

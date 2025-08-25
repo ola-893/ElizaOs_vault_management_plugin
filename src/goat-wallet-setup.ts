@@ -19,7 +19,7 @@ if (!EVM_PROVIDER_URL) {
   console.warn("EVM_PROVIDER_URL not provided, using public RPC");
 }
 
-// Chain configuration - you can modify this based on your needs
+// Chain configuration
 const CHAIN_CONFIG = {
   mainnet: {
     chain: mainnet,
@@ -66,7 +66,7 @@ if (!chainConfig) {
 const account = privateKeyToAccount(EVM_PRIVATE_KEY as `0x${string}`);
 
 const walletClient:WalletClient = createWalletClient({
-    account: account,  // Notice: account property first
+    account: account,
     transport: http(chainConfig.rpcUrl),
     chain: chainConfig.chain,
 });
@@ -81,7 +81,7 @@ export const getOnChainTools = () => {
       plugins: [
         sendETH(), // For ETH transfers
         erc20({ 
-          tokens: [USDC, PEPE, MODE] // These will be overridden by chain-specific tokens
+          tokens: [USDC, PEPE, MODE] 
         }),
         // Add staking-specific plugins here when available:
         // aave(), compound(), lido(), etc.

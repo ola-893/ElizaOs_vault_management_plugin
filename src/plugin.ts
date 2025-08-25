@@ -1,4 +1,3 @@
-// services/staking-manager-plugin.ts
 import { 
   Plugin, 
   Action, 
@@ -20,8 +19,6 @@ import { checkWalletBalances, executeStakingAction, executeStakingTransaction, s
 
 
 // TYPES
-
-
 interface StakingOpportunity {
   readonly protocol: string;
   readonly asset: string;
@@ -155,64 +152,6 @@ const stakingOpportunityProvider: Provider = {
       return getFallbackOpportunities();
     }
   }
-};
-
-const walletAnalyzerProvider: Provider = {
- name: "walletAnalyzer",
- get: async (runtime: IAgentRuntime, message: Memory, state: State): Promise<ProviderResult> => {
-   const cache = new Cache<WalletAnalysis>(10 * 60 * 1000); // 10 minutes
-   const walletAddress = Validator.extractWalletAddress(message.content.text || '');
-   
-   if (!walletAddress || !Validator.isValidAddress(walletAddress)) {
-     throw new Error("Invalid wallet address provided");
-   }
-
-   const cached = cache.get(walletAddress);
-   if (cached) {
-     elizaLogger.info(`📋 Using cached analysis for ${walletAddress}`);
-     return cached as ProviderResult;
-   }
-
-   elizaLogger.info(`🔍 Analyzing wallet: ${walletAddress}`);
-
-   try {
-     // Mock analysis - in production, integrate with real blockchain APIs
-     const analysis: WalletAnalysis = {
-       address: walletAddress,
-       totalBalance: "5.25",
-       portfolioValue: "5.25",
-       transactionCount: 150,
-       riskProfile: {
-         riskScore: 45,
-         riskTolerance: "MODERATE",
-         maxSinglePosition: "2.5",
-         lockPeriodTolerance: 30,
-       },
-       behaviorPatterns: [
-         {
-           pattern: "Regular Staker",
-           frequency: 5,
-           confidence: 0.8,
-           description: "Consistently stakes ETH on a monthly basis",
-         },
-         {
-           pattern: "DeFi Explorer",
-           frequency: 8,
-           confidence: 0.7,
-           description: "Actively explores new DeFi protocols",
-         }
-       ],
-     };
-
-     cache.set(walletAddress, analysis);
-     elizaLogger.success(`✅ Wallet analysis completed for ${walletAddress}`);
-
-     return analysis as ProviderResult;
-   } catch (error) {
-     elizaLogger.error(`❌ Error analyzing wallet ${walletAddress}:`, error);
-     throw new Error(`Failed to analyze wallet: ${error instanceof Error ? error.message : 'Unknown error'}`);
-   }
- }
 };
 
 
@@ -489,11 +428,9 @@ export const EnhancedStakingManagerPlugin: Plugin = {
   ],
 };
 
-// Add these methods to the plugin for backward compatibility
 export const StakingManagerPluginWithMethods = {
   ...EnhancedStakingManagerPlugin,
   handleWalletAnalysis: async (message: Memory): Promise<string> => {
-    // This method can be called directly from elizaService
     try {
       const walletAddress = Validator.extractWalletAddress(message.content.text || '');
       if (!walletAddress) {
@@ -506,7 +443,6 @@ export const StakingManagerPluginWithMethods = {
   },
   
   handleStakingOpportunities: async (message: Memory): Promise<string> => {
-    // This method can be called directly from elizaService
     try {
       return "🔍 Fetching staking opportunities... Please use the action system for full results.";
     } catch (error) {

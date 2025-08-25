@@ -276,7 +276,7 @@ class InternalTokenBalanceProvider {
       nativeCurrency: { name: "Sepolia Ether", symbol: "ETH", decimals: 18 },
     },
 
-    // Replace Goerli with Holesky (Ethereum's new testnet)
+   
     holesky: {
       id: 17000,
       name: "Holesky",
@@ -289,7 +289,6 @@ class InternalTokenBalanceProvider {
       nativeCurrency: { name: "Holesky Ether", symbol: "ETH", decimals: 18 },
     },
 
-    // Replace Base Goerli with Base Sepolia
     baseSepolia: {
       id: 84532,
       name: "Base Sepolia",
@@ -303,7 +302,6 @@ class InternalTokenBalanceProvider {
       nativeCurrency: { name: "Sepolia Ether", symbol: "ETH", decimals: 18 },
     },
 
-    // Replace Arbitrum Goerli with Arbitrum Sepolia
     arbitrumSepolia: {
       id: 421614,
       name: "Arbitrum Sepolia",
@@ -321,7 +319,6 @@ class InternalTokenBalanceProvider {
       },
     },
 
-    // Replace Polygon Mumbai with Polygon Amoy
     polygonAmoy: {
       id: 80002,
       name: "Polygon Amoy",
@@ -335,7 +332,6 @@ class InternalTokenBalanceProvider {
       nativeCurrency: { name: "MATIC", symbol: "MATIC", decimals: 18 },
     },
 
-    // Replace Optimism Goerli with Optimism Sepolia
     optimismSepolia: {
       id: 11155420,
       name: "Optimism Sepolia",
@@ -808,7 +804,7 @@ class InternalTokenBalanceProvider {
     },
   ];
 
-  // UPDATED: Helper method to detect if chain is testnet
+  // Helper method to detect if chain is testnet
   public static isTestnetChain(chainName: string): boolean {
     return (
       InternalTokenBalanceProvider.CHAIN_CONFIG[
@@ -817,7 +813,7 @@ class InternalTokenBalanceProvider {
     );
   }
 
-  // NEW: Get all testnet chains
+  // Get all testnet chains
   public static getTestnetChains(): string[] {
     return Object.keys(InternalTokenBalanceProvider.CHAIN_CONFIG).filter(
       (chainName) =>
@@ -827,7 +823,7 @@ class InternalTokenBalanceProvider {
     );
   }
 
-  // NEW: Get all mainnet chains
+  // Get all mainnet chains
   public static getMainnetChains(): string[] {
     return Object.keys(InternalTokenBalanceProvider.CHAIN_CONFIG).filter(
       (chainName) =>
@@ -886,7 +882,6 @@ class InternalTokenBalanceProvider {
     "function name() view returns (string)",
   ]);
 
-  // NEW: Create public client for chain
   private createPublicClient(chainName: string) {
     const chainConfig =
       InternalTokenBalanceProvider.CHAIN_CONFIG[
@@ -901,7 +896,7 @@ class InternalTokenBalanceProvider {
     });
   }
 
-  // UPDATED: Main method to get token balances with proper testnet filtering
+  //Main method to get token balances with proper testnet filtering
   async getTokenBalances(
     walletProvider: any,
     address: Address,
@@ -1081,8 +1076,6 @@ export class Validator {
   static isValidAddress(address: string): boolean {
     return /^0x[a-fA-F0-9]{40}$/.test(address);
   }
-
-  // NEW: Helper to detect testnet request
   static isTestnetRequest(text: string): boolean {
     const lowerText = text.toLowerCase();
     return (
@@ -1238,7 +1231,6 @@ export class WalletAnalyzer implements Provider {
         "Failed to get wallet data from evmWalletProvider:",
         error
       );
-      // Don't throw here - continue with token balance analysis
     }
 
     // Get token balances with enhanced error handling and retries
@@ -1333,7 +1325,7 @@ export class WalletAnalyzer implements Provider {
     };
   }
 
-  // NEW: Strict EVM configuration validation with better error messages
+  //Strict EVM configuration validation with better error messages
   private async validateEvmConfigurationStrict(
     runtime: IAgentRuntime
   ): Promise<void> {
@@ -1356,7 +1348,7 @@ export class WalletAnalyzer implements Provider {
     elizaLogger.info("✅ EVM configuration validated successfully");
   }
 
-  // NEW: Wallet provider initialization with retry logic
+  //Wallet provider initialization with retry logic
   private async initWalletProviderWithRetry(
     runtime: IAgentRuntime,
     maxRetries: number = 3
@@ -1391,7 +1383,7 @@ export class WalletAnalyzer implements Provider {
     );
   }
 
-  // NEW: Token balance retrieval with retry logic and better error handling
+  // Token balance retrieval with retry logic and better error handling
   private async getTokenBalancesWithRetry(
     walletProvider: any,
     address: Address,
@@ -1478,7 +1470,7 @@ export class WalletAnalyzer implements Provider {
     }
   }
 
-  // UPDATED: Only generate recommendations for actual holdings - NO MOCK DATA
+  // Only generate recommendations for actual holdings - NO MOCK DATA
   private generateRealStakingRecommendations(
     nativeBalances: Record<string, string>,
     tokenHoldings: TokenHolding[],
@@ -1620,7 +1612,7 @@ export class WalletAnalyzer implements Provider {
     });
   }
 
-  // UPDATED: EVM capabilities with testnet support - no mock protocols
+  // EVM capabilities with testnet support - no mock protocols
   private getEVMCapabilities(
     walletProvider: any,
     testnetOnly: boolean = false
@@ -2020,7 +2012,7 @@ export class WalletAnalyzer implements Provider {
     return 365;
   }
 
-  // UPDATED: Formatting with no mock data mentions
+  // Formatting with no mock data mentions
   private formatAnalysisWithStaking(
     analysis: WalletAnalysis,
     agentName: string

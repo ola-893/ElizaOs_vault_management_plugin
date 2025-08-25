@@ -13,10 +13,8 @@ interface GoatTools {
   aave: {
     supply: (params: { tokenAddress: string; amount: string; }) => Promise<{ hash: any; success: boolean; }>;
     withdraw: (params: { tokenAddress: string; amount: string; }) => Promise<any>;
-    // add other aave methods as needed
   };
-  // add other specific tools as needed
-  [key: string]: any; // Keep this for flexibility
+  [key: string]: any;
 }
 
 interface ChainConfig {
@@ -230,8 +228,8 @@ class GoatWalletManager {
     name: symbol,
     // Construct the 'chains' property as a Record<number, { contractAddress: string }>
     chains: {
-      [Number(this.chain)]: { // Assuming 'this.chain' is a string representation of the chain ID
-        contractAddress: address as `0x${string}` // The address needs to be a valid hex string
+      [Number(this.chain)]: { 
+        contractAddress: address as `0x${string}`
       }
     }
   }));
@@ -401,7 +399,6 @@ class GoatWalletManager {
   // Helper methods for encoding transaction data
   private encodeAaveETHSupply(): string {
     // depositETH(address lendingPool, address onBehalfOf, uint16 referralCode)
-    // This is a simplified encoding - in production you'd use a proper ABI encoder
     return '0x474cf53d000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000';
   }
 
